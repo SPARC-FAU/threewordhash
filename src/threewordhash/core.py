@@ -87,7 +87,7 @@ def load_wordlist(path: str) -> List[str]:
 
 
 def friendly_id(
-    participant_input: str,
+    user_input: str,
     secret_salt: str,
     wordlist: List[str],
     n_words: int = 3,
@@ -95,43 +95,16 @@ def friendly_id(
     sep: str = "-",
 ) -> str:
     """
-    Create a human-friendly, deterministic ID from participant_input.
+    Create a human-friendly, deterministic ID from input.
     Store ONLY the returned ID. Keep secret_salt secret.
     """
     if n_words < 2:
         raise ValueError("Use at least 2 words.")
-    digest = _hmac_sha256(secret_salt.encode("utf-8"), participant_input)
+    digest = _hmac_sha256(secret_salt.encode("utf-8"), user_input)
     idxs = _bytes_to_indices(digest, len(wordlist), n_words)
     words = [wordlist[i] for i in idxs]
     check = _checksum_base36(digest, checksum_len)
     return sep.join(words + [check] if checksum_len > 0 else words)
-
-
-def verify_friendly_id(
-    participant_input: str,
-    secret_salt: str,
-    wordlist: List[str],
-    claimed_id: str,
-    sep: str = "-",
-) -> bool:
-    """
-    Recompute and compare. This is what you'd do in Study #2 to match.
-    """
-    parts = claimed_id.split(sep)
-    if len(parts) < 3:
-        return False
-    # Infer n_words/checksum length from the claimed ID
-    checksum = parts[-1]
-    n_words = len(parts) - 1
-    recomputed = friendly_id(
-        participant_input,
-        secret_salt,
-        wordlist,
-        n_words=n_words,
-        checksum_len=len(checksum),
-        sep=sep,
-    )
-    return recomputed == claimed_id
 
 
 def create_salt_digest(byte_length: int = 32) -> str:
@@ -170,7 +143,7 @@ def parse_args():
         "-i",
         "--input",
         type=str,
-        nargs="*",
+        action="append",
         help="Input strings (e.g., names or emails)",
     )
 

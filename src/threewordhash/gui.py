@@ -188,7 +188,7 @@ class TWHApp(QMainWindow):
 
     def encode(self):
         result = friendly_id(
-            participant_input=self._current_input,
+            user_input=self._current_input,
             secret_salt=self._salt,
             wordlist=self._wordlist,
             n_words=self._word_count,
